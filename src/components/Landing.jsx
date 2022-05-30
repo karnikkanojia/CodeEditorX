@@ -2,7 +2,12 @@ import React, { useState, useEffect } from 'react'
 import CodeEditorWindow from './index';
 import axios from 'axios';
 import { classnames } from '../utils/general';
-import { languageOptions } from '../constants/languageOptions'
+import { languageOptions } from '../constants/languageOptions';
+
+import { ToastContainer } from 'react-toastify';
+import "react-toastify/dist/ReactToastify.css";
+
+import { defineTheme } from '../lib/defineTheme';
 
 const Landing = () => {
   return (
