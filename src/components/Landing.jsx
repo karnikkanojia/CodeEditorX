@@ -8,6 +8,7 @@ import { ToastContainer } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
 
 import { defineTheme } from '../lib/defineTheme';
+import useKeyPress from '../hooks/useKeyPress';
 
 const Landing = () => {
   return (
