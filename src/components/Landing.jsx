@@ -19,6 +19,8 @@ import {
   ThemeDropdown,
 } from "./";
 
+import { Buffer } from "buffer";
+
 const javascriptDefault = "// some comment";
 
 const Landing = () => {
