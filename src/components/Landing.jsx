@@ -23,7 +23,6 @@ import {
 const javascriptDefault = "// some comment";
 
 const Landing = () => {
-
   const [code, setCode] = useState(javascriptDefault);
   const [customInput, setCustomInput] = useState("");
   const [outputDetails, setOutputDetails] = useState(null);
@@ -37,10 +36,10 @@ const Landing = () => {
   const onSelectChange = (sl) => {
     console.log("Selected Option...", sl);
     setLanguage(sl);
-  }
+  };
 
   useEffect(() => {
-    if(enterPress && ctrlPress){
+    if (enterPress && ctrlPress) {
       console.log("enterPress", enterPress);
       console.log("ctrlPress", ctrlPress);
       handleCompile();
@@ -48,7 +47,7 @@ const Landing = () => {
   }, [ctrlPress, enterPress]);
 
   const onChange = (action, data) => {
-    switch (action){
+    switch (action) {
       case "code": {
         setCode(data);
         break;
@@ -60,16 +59,86 @@ const Landing = () => {
   };
 
   const handleCompile = () => {
+    setProcessing(true);
+    const formData = {
+      language_id: language.id,
+      source_code: Buffer.from(code, "base64"),
+      stdin: Buffer.from(customInput, "base64"),
+    };
+    const options = {
+      method: "POST",
+      url: process.env.REACT_APP_RAPID_API_URL,
+      params: { base64_encoded: "true", fields: "*" },
+      headers: {
+        "content-type": "application/json",
+        "Content-Type": "application/json",
+        "X-RapidAPI-Host": process.env.REACT_APP_RAPID_API_HOST,
+        "X-RapidAPI-Key": process.env.REACT_APP_RAPID_API_KEY,
+      },
+      data: formData,
+    };
 
+    axios
+      .request(options)
+      .then((res) => {
+        console.log("Result Data: ", res.data);
+        const token = res.data.token;
+        checkStatus(token);
+      })
+      .catch((err) => {
+        let error = err.response ? err.response.data : err;
+        setProcessing(false);
+        console.log(error);
+      });
   };
 
   const checkStatus = async (token) => {
+    const options = {
+      method: "GET",
+      url: process.env.REACT_APP_RAPID_API_URL + "/" + token,
+      params: { base64_encoded: "true", fields: "*" },
+      headers: {
+        "X-RapidAPI-Host": process.env.REACT_APP_RAPID_API_HOST,
+        "X-RapidAPI-Key": process.env.REACT_APP_RAPID_API_KEY,
+      },
+    };
+
+    try {
+      let response = await axios.request(options);
+      let statusId = response.data.status?.id;
+
+      if (statusId === 1 || statusId === 2){
+        setTimeout(() => {
+          checkStatus(token);
+        }, 2000);
+        return
+      }
+      else {
+        setProcessing(false);
+        setOutputDetails(response.data);
+        showSuccessToast("Compiled Succesfully");
+        console.log("Response Data: ", response.data);
+        return
+      }
+    }
+    catch(err) {
+      console.log("Error: ", err);
+      setProcessing(false);
+      showErrorToast();
+    }
 
   };
 
   const handleThemeChange = (th) => {
+    const theme = th;
+    console.log("theme...", theme);
 
-  }
+    if (["light", "vs-dark"].includes(theme.value)) {
+      setTheme(theme);
+    } else {
+      defineTheme(theme.value).then((_) => setTheme(theme));
+    }
+  };
 
   useEffect(() => {
     defineTheme("oceanic-next").then(() => {
@@ -85,7 +154,7 @@ const Landing = () => {
       closeOnClick: true,
       pauseOnHover: true,
       draggable: true,
-      progress: undefined
+      progress: undefined,
     });
   };
 
@@ -121,7 +190,7 @@ const Landing = () => {
           <LanguagesDropdown onSelectChange={onSelectChange} />
         </div>
         <div className="px-4 py-2">
-          <LanguagesDropdown onSelectChange={onSelectChange} />
+          <ThemeDropdown handleThemeChange={handleThemeChange} theme={theme} />
         </div>
       </div>
       <div className="flex flex-row space-x-4 items-start px-4 py-4">
@@ -146,18 +215,18 @@ const Landing = () => {
               disabled={!code}
               className={classnames(
                 "mt-4 border-2 border-black z-10 rounded-md shadow-[5px_5px_0px_0px_rgba(0,0,0)] px-4 py-2 hover:shadow transition duration-200 bg-white flex-shrink-0",
-                !code? "opacity-50":""
+                !code ? "opacity-50" : ""
               )}
             >
               {processing ? "Processing..." : "Compile and Execute"}
             </button>
           </div>
-                { outputDetails && <OutputDetails outputDetails={outputDetails} /> }
+          {outputDetails && <OutputDetails outputDetails={outputDetails} />}
         </div>
       </div>
       <Footer />
     </>
-  )
+  );
 };
 
 export default Landing;
