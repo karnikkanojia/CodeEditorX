@@ -19,9 +19,32 @@ import {
   ThemeDropdown,
 } from "./";
 
-import { Buffer } from "buffer";
-
-const javascriptDefault = "// some comment";
+const javascriptDefault = `/**
+* Problem: Binary Search: Search a sorted array for a target value.
+*/
+// Time: O(log n)
+const binarySearch = (arr, target) => {
+ return binarySearchHelper(arr, target, 0, arr.length - 1);
+};
+const binarySearchHelper = (arr, target, start, end) => {
+ if (start > end) {
+   return false;
+ }
+ let mid = Math.floor((start + end) / 2);
+ if (arr[mid] === target) {
+   return mid;
+ }
+ if (arr[mid] < target) {
+   return binarySearchHelper(arr, target, mid + 1, end);
+ }
+ if (arr[mid] > target) {
+   return binarySearchHelper(arr, target, start, mid - 1);
+ }
+};
+const arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+const target = 5;
+console.log(binarySearch(arr, target));
+`;
 
 const Landing = () => {
   const [code, setCode] = useState(javascriptDefault);
@@ -63,8 +86,8 @@ const Landing = () => {
     setProcessing(true);
     const formData = {
       language_id: language.id,
-      source_code: Buffer.from(code, "base64"),
-      stdin: Buffer.from(customInput, "base64"),
+      source_code: btoa(code),
+      stdin: btoa(customInput),
     };
     const options = {
       method: "POST",
@@ -78,7 +101,7 @@ const Landing = () => {
       },
       data: formData,
     };
-
+    console.log(options);
     axios
       .request(options)
       .then((res) => {
