@@ -30,6 +30,18 @@ npm run start
 npm run test
 ```
 
+## Screenshots
+
+![Home Page](assets/main.png)
+
+<br/>
+
+![Successful](assets/successful.png)
+
+<br/>
+
+![Segmentation Fault](assets/segfault.png)
+
 ## Author
 
 👤 **Karnik Kanojia**
